@@ -1,5 +1,5 @@
 import pg from "pg";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 const url = process.env.DATABASE_URL_DIRECT;
 if (!url) throw new Error("DATABASE_URL_DIRECT is required");
 const client = new pg.Client({
@@ -9,9 +9,12 @@ const client = new pg.Client({
 try {
   await client.connect();
   await client.query("BEGIN");
-  await client.query(
-    await readFile(new URL("../db/001-initial.sql", import.meta.url), "utf8"),
-  );
+  const directory = new URL("../db/", import.meta.url);
+  for (const file of (await readdir(directory))
+    .filter((name) => /^\d+.*\.sql$/.test(name))
+    .sort()) {
+    await client.query(await readFile(new URL(file, directory), "utf8"));
+  }
   await client.query("COMMIT");
   console.log("Sleep schema ready.");
 } catch {

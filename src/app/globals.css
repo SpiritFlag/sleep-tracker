@@ -1282,6 +1282,159 @@ textarea {
     font-size: 11px;
   }
 }
+.cpap-description {
+  margin: 9px 0 0;
+}
+.cpap-month input {
+  width: 148px;
+  margin: 0;
+  background: white;
+}
+.cpap-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+.cpap-reference-grid > div {
+  border-right: 1px solid var(--line);
+  padding-right: 15px;
+}
+.cpap-reference-grid > div:last-child {
+  border: 0;
+}
+.cpap-reference-grid span,
+.cpap-reference-grid small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.cpap-reference-grid strong {
+  display: block;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  margin: 13px 0 9px;
+}
+.cpap-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 2fr) 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+.cpap-form .button {
+  min-height: 41px;
+}
+.cpap-days {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+}
+.cpap-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding: 15px 9px;
+  text-align: left;
+  min-width: 0;
+}
+.cpap-day.selected {
+  background: var(--soft);
+  border-radius: 5px;
+}
+.cpap-day-number {
+  width: 29px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cpap-day-number small {
+  font-size: 9px;
+  margin-left: 3px;
+  color: var(--muted);
+}
+.cpap-day-meter {
+  flex: 1;
+  height: 4px;
+  background: #edeef5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cpap-day-meter i {
+  height: 100%;
+  background: #9c96d6;
+  display: block;
+  border-radius: 4px;
+}
+.cpap-day strong {
+  font-size: 11px;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: right;
+}
+.cpap-entry-state {
+  font-size: 9px;
+  color: var(--muted);
+}
+@media (max-width: 1100px) {
+  .cpap-reference-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cpap-reference-grid > div:nth-child(2) {
+    border: 0;
+  }
+}
+@media (max-width: 760px) {
+  .navigation nav {
+    gap: 13px;
+  }
+  .navigation nav > button {
+    font-size: 11px;
+  }
+  .cpap-view > .section-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .cpap-month {
+    width: 100%;
+  }
+  .cpap-month input {
+    width: auto;
+    flex: 1;
+  }
+  .cpap-reference-grid {
+    gap: 24px 16px;
+  }
+  .cpap-reference-grid strong {
+    font-size: 17px;
+  }
+  .cpap-reference-grid small {
+    font-size: 9px;
+  }
+  .cpap-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 12px;
+  }
+  .cpap-form > label:first-child {
+    grid-column: span 2;
+  }
+  .cpap-form > button {
+    grid-column: span 2;
+  }
+  .cpap-days {
+    grid-template-columns: 1fr;
+  }
+  .cpap-description {
+    font-size: 11px;
+  }
+  .cpap-insurance .quiet-tag {
+    font-size: 8px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;

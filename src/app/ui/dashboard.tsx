@@ -15,11 +15,13 @@ import type { Mutation } from "@/lib/store";
 import Editor, { type EditorState } from "./editor";
 import { Timeline, Trend } from "./charts";
 import Calendar from "./calendar";
-type Tab = "dashboard" | "timeline" | "calendar" | "trash";
+import Cpap from "./cpap";
+type Tab = "dashboard" | "timeline" | "calendar" | "trash" | "cpap";
 const tabs: [Tab, string][] = [
   ["dashboard", "대시보드"],
   ["timeline", "타임라인"],
   ["calendar", "캘린더"],
+  ["cpap", "양압기"],
   ["trash", "휴지통"],
 ];
 export default function Dashboard({
@@ -306,49 +308,52 @@ export default function Dashboard({
             </button>
           </section>
         )}
-        <section className="metrics" aria-label="수면 요약">
-          <article className="metric primary">
-            <p className="metric-label">
-              오늘의 총 수면시간 <span>{today.slice(5).replace("-", "/")}</span>
-            </p>
-            <div className="metric-value">
-              {!loaded
-                ? "—"
-                : dayStats.count
-                  ? formatDuration(dayStats.sum)
-                  : "—"}
-            </div>
-            <p className="metric-help">
-              {dayStats.count
-                ? `${dayStats.count}개 완료 세션 · 귀속일 기준`
-                : "오늘에 귀속된 완료 기록이 없어요"}
-            </p>
-          </article>
-          <article className="metric">
-            <p className="metric-label">
-              최근 7일 평균 <span>7 DAYS</span>
-            </p>
-            <div className="metric-value">
-              {loaded ? formatDuration(week.recordedAverage) : "—"}
-            </div>
-            <p className="metric-help">
-              기록 {week.recordedDays}일 / 7일 · 전체 날짜 기준{" "}
-              {formatDuration(week.calendarAverage)}
-            </p>
-          </article>
-          <article className="metric">
-            <p className="metric-label">
-              최근 30일 평균 <span>30 DAYS</span>
-            </p>
-            <div className="metric-value">
-              {loaded ? formatDuration(monthly.recordedAverage) : "—"}
-            </div>
-            <p className="metric-help">
-              기록 {monthly.recordedDays}일 / 30일 · 전체 날짜 기준{" "}
-              {formatDuration(monthly.calendarAverage)}
-            </p>
-          </article>
-        </section>
+        {tab !== "cpap" && (
+          <section className="metrics" aria-label="수면 요약">
+            <article className="metric primary">
+              <p className="metric-label">
+                오늘의 총 수면시간{" "}
+                <span>{today.slice(5).replace("-", "/")}</span>
+              </p>
+              <div className="metric-value">
+                {!loaded
+                  ? "—"
+                  : dayStats.count
+                    ? formatDuration(dayStats.sum)
+                    : "—"}
+              </div>
+              <p className="metric-help">
+                {dayStats.count
+                  ? `${dayStats.count}개 완료 세션 · 귀속일 기준`
+                  : "오늘에 귀속된 완료 기록이 없어요"}
+              </p>
+            </article>
+            <article className="metric">
+              <p className="metric-label">
+                최근 7일 평균 <span>7 DAYS</span>
+              </p>
+              <div className="metric-value">
+                {loaded ? formatDuration(week.recordedAverage) : "—"}
+              </div>
+              <p className="metric-help">
+                기록 {week.recordedDays}일 / 7일 · 전체 날짜 기준{" "}
+                {formatDuration(week.calendarAverage)}
+              </p>
+            </article>
+            <article className="metric">
+              <p className="metric-label">
+                최근 30일 평균 <span>30 DAYS</span>
+              </p>
+              <div className="metric-value">
+                {loaded ? formatDuration(monthly.recordedAverage) : "—"}
+              </div>
+              <p className="metric-help">
+                기록 {monthly.recordedDays}일 / 30일 · 전체 날짜 기준{" "}
+                {formatDuration(monthly.calendarAverage)}
+              </p>
+            </article>
+          </section>
+        )}
         <div className="navigation">
           <nav aria-label="기록 보기">
             {tabs.map(([key, label]) => (
@@ -377,6 +382,7 @@ export default function Dashboard({
             ↻ 새로고침
           </button>
         </div>
+        {tab === "cpap" && <Cpap today={today} />}
         {(tab === "dashboard" || tab === "timeline") && (
           <div className="range-bar">
             <div className="segmented" aria-label="조회 기간">
@@ -529,170 +535,172 @@ export default function Dashboard({
             />
           </section>
         )}
-        <section className="panel records">
-          <div className="section-head">
-            <div>
-              <p className="eyebrow">
-                {tab === "trash"
-                  ? "RECOVER YOUR RECORDS"
-                  : "SMALL MOMENTS, KEPT"}
+        {tab !== "cpap" && (
+          <section className="panel records">
+            <div className="section-head">
+              <div>
+                <p className="eyebrow">
+                  {tab === "trash"
+                    ? "RECOVER YOUR RECORDS"
+                    : "SMALL MOMENTS, KEPT"}
+                </p>
+                <h2>
+                  {tab === "trash"
+                    ? "휴지통"
+                    : selected
+                      ? `${selected.replaceAll("-", ".")}의 기록`
+                      : "수면 기록"}
+                  <span className="heading-count">
+                    {tab === "calendar" && !selected
+                      ? active.filter((s) => attributedDate(s.start) === today)
+                          .length
+                      : visible.length}
+                  </span>
+                </h2>
+              </div>
+              <div className="inline-actions">
+                {selected && (
+                  <button
+                    className="text-button"
+                    onClick={() => setSelected(null)}
+                  >
+                    선택 해제
+                  </button>
+                )}
+                {tab !== "trash" && (
+                  <button
+                    className="text-button"
+                    onClick={() => setEditor(selected ? { day: selected } : {})}
+                    disabled={busy || !loaded}
+                  >
+                    ＋ 기록 추가
+                  </button>
+                )}
+              </div>
+            </div>
+            {tab === "trash" && (
+              <p className="muted small">
+                자동으로 지워지지 않아요. 복구할 때 시간이 겹치는지 다시
+                확인해요. 영구 삭제한 기록은 되돌릴 수 없어요.
               </p>
-              <h2>
-                {tab === "trash"
-                  ? "휴지통"
-                  : selected
-                    ? `${selected.replaceAll("-", ".")}의 기록`
-                    : "수면 기록"}
-                <span className="heading-count">
-                  {tab === "calendar" && !selected
-                    ? active.filter((s) => attributedDate(s.start) === today)
-                        .length
-                    : visible.length}
-                </span>
-              </h2>
+            )}
+            <div className="record-list">
+              {(tab === "calendar" && !selected
+                ? active.filter((s) => attributedDate(s.start) === today)
+                : visible
+              )
+                .slice(0, limit)
+                .map((s) => (
+                  <article className="record" key={s.id}>
+                    <div className={`record-symbol ${s.type}`}>
+                      {s.type === "nap" ? "☀" : "☾"}
+                    </div>
+                    <div className="record-body">
+                      <div className="record-top">
+                        <strong>
+                          {formatDateTime(s.start)}{" "}
+                          <span className="arrow">→</span>{" "}
+                          {s.end ? formatDateTime(s.end) : "진행 중"}
+                        </strong>
+                        <span className={`type-tag ${s.type}`}>
+                          {TYPES[s.type]}
+                        </span>
+                      </div>
+                      <div className="record-meta">
+                        <span>{attributedDate(s.start)} 귀속</span>
+                        <span>
+                          {s.end
+                            ? formatDuration(duration(s))
+                            : "완료 전 통계 제외"}
+                        </span>
+                      </div>
+                      {s.note && <p className="record-note">{s.note}</p>}
+                    </div>
+                    <div className="record-actions">
+                      {tab === "trash" ? (
+                        <>
+                          <button
+                            className="text-button"
+                            disabled={busy}
+                            onClick={() =>
+                              action({
+                                action: "restore",
+                                id: s.id,
+                                version: s.version,
+                              })
+                            }
+                          >
+                            복구
+                          </button>
+                          <button
+                            className="text-button danger"
+                            disabled={busy}
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "이 기록을 영구 삭제할까요? 삭제 후에는 복구할 수 없어요.",
+                                )
+                              )
+                                void action({
+                                  action: "purge",
+                                  id: s.id,
+                                  version: s.version,
+                                });
+                            }}
+                          >
+                            영구 삭제
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className="text-button"
+                            disabled={busy}
+                            onClick={() => edit(s)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            className="text-button muted"
+                            disabled={busy}
+                            onClick={() =>
+                              action({
+                                action: "trash",
+                                id: s.id,
+                                version: s.version,
+                              })
+                            }
+                          >
+                            휴지통
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </article>
+                ))}
             </div>
-            <div className="inline-actions">
-              {selected && (
-                <button
-                  className="text-button"
-                  onClick={() => setSelected(null)}
-                >
-                  선택 해제
-                </button>
-              )}
-              {tab !== "trash" && (
-                <button
-                  className="text-button"
-                  onClick={() => setEditor(selected ? { day: selected } : {})}
-                  disabled={busy || !loaded}
-                >
-                  ＋ 기록 추가
-                </button>
-              )}
-            </div>
-          </div>
-          {tab === "trash" && (
-            <p className="muted small">
-              자동으로 지워지지 않아요. 복구할 때 시간이 겹치는지 다시 확인해요.
-              영구 삭제한 기록은 되돌릴 수 없어요.
-            </p>
-          )}
-          <div className="record-list">
             {(tab === "calendar" && !selected
               ? active.filter((s) => attributedDate(s.start) === today)
               : visible
-            )
-              .slice(0, limit)
-              .map((s) => (
-                <article className="record" key={s.id}>
-                  <div className={`record-symbol ${s.type}`}>
-                    {s.type === "nap" ? "☀" : "☾"}
-                  </div>
-                  <div className="record-body">
-                    <div className="record-top">
-                      <strong>
-                        {formatDateTime(s.start)}{" "}
-                        <span className="arrow">→</span>{" "}
-                        {s.end ? formatDateTime(s.end) : "진행 중"}
-                      </strong>
-                      <span className={`type-tag ${s.type}`}>
-                        {TYPES[s.type]}
-                      </span>
-                    </div>
-                    <div className="record-meta">
-                      <span>{attributedDate(s.start)} 귀속</span>
-                      <span>
-                        {s.end
-                          ? formatDuration(duration(s))
-                          : "완료 전 통계 제외"}
-                      </span>
-                    </div>
-                    {s.note && <p className="record-note">{s.note}</p>}
-                  </div>
-                  <div className="record-actions">
-                    {tab === "trash" ? (
-                      <>
-                        <button
-                          className="text-button"
-                          disabled={busy}
-                          onClick={() =>
-                            action({
-                              action: "restore",
-                              id: s.id,
-                              version: s.version,
-                            })
-                          }
-                        >
-                          복구
-                        </button>
-                        <button
-                          className="text-button danger"
-                          disabled={busy}
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "이 기록을 영구 삭제할까요? 삭제 후에는 복구할 수 없어요.",
-                              )
-                            )
-                              void action({
-                                action: "purge",
-                                id: s.id,
-                                version: s.version,
-                              });
-                          }}
-                        >
-                          영구 삭제
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="text-button"
-                          disabled={busy}
-                          onClick={() => edit(s)}
-                        >
-                          수정
-                        </button>
-                        <button
-                          className="text-button muted"
-                          disabled={busy}
-                          onClick={() =>
-                            action({
-                              action: "trash",
-                              id: s.id,
-                              version: s.version,
-                            })
-                          }
-                        >
-                          휴지통
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </article>
-              ))}
-          </div>
-          {(tab === "calendar" && !selected
-            ? active.filter((s) => attributedDate(s.start) === today)
-            : visible
-          ).length === 0 && (
-            <div className="empty compact">
-              <p>
-                {tab === "trash"
-                  ? "휴지통이 비어 있어요."
-                  : "이 날짜에 귀속된 수면 기록이 없어요."}
-              </p>
-            </div>
-          )}
-          {visible.length > limit && (
-            <button
-              className="button load-more"
-              onClick={() => setLimit((n) => n + 20)}
-            >
-              기록 더 보기
-            </button>
-          )}
-        </section>
+            ).length === 0 && (
+              <div className="empty compact">
+                <p>
+                  {tab === "trash"
+                    ? "휴지통이 비어 있어요."
+                    : "이 날짜에 귀속된 수면 기록이 없어요."}
+                </p>
+              </div>
+            )}
+            {visible.length > limit && (
+              <button
+                className="button load-more"
+                onClick={() => setLimit((n) => n + 20)}
+              >
+                기록 더 보기
+              </button>
+            )}
+          </section>
+        )}
         <footer>
           <span>sleep / observatory</span>
           <span>
