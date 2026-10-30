@@ -4,7 +4,7 @@
 
 Next.js 16 App Router, React 19, TypeScript, 일반 CSS를 사용한다. 차트는 HTML/CSS로 직접 렌더링한다. Neon Postgres에 저장하며 `pg` 풀과 Vercel Fluid의 `attachDatabasePool`을 사용한다. Vercel 실행 지역은 Singapore (`sin1`), Node 24다.
 
-소스 저장소: `SpiritFlag/sleep-tracker` (public). Vercel 프로젝트 `sleep-tracker`, SpiritFlag Universe 팀. Neon 전용 프로젝트 `dark-base-18573667` (Singapore). 기존 서비스의 데이터베이스는 사용하지 않는다.
+소스 저장소: `SpiritFlag/sleep-tracker` (public). Vercel 프로젝트 `sleep-tracker`, SpiritFlag Universe 팀. 운영 주소는 https://sleep-tracker.spiritflag.work 이며 Cloudflare의 DNS 전용 CNAME으로 연결한다. Neon 전용 프로젝트 `dark-base-18573667` (Singapore). 기존 서비스의 데이터베이스는 사용하지 않는다.
 
 ## 저장과 API
 
@@ -30,4 +30,4 @@ DB의 부분 exclusion constraint가 휴지통을 제외한 `tstzrange(started_a
 
 `npm ci`, `npm run typecheck`, `npm test`, `npm run build`를 사용한다. Vercel 프로젝트 연결과 환경변수 준비 후 `npm run db:migrate`로 스키마를 적용한다. `npm run dev`는 `http://127.0.0.1:3001`에 바인딩한다. 로컬 Clerk 사용 시 APP_URL도 그 origin으로 설정하고 해당 origin을 Clerk에서 허용해야 한다.
 
-테스트는 한국 시간 정오 경계·분할 수면·집계, 인증·출처·입력 검증, PGlite의 실제 Postgres 제약과 수정/휴지통/복구를 검증한다. 실제 로그인과 화면 검증 여부는 작업 결과에서 별도로 보고한다.
+테스트는 한국 시간 정오 경계·분할 수면·집계, 인증·출처·입력 검증, PGlite의 실제 Postgres 제약과 수정/휴지통/복구를 검증한다. 실제 Neon DB에서도 합성 기록의 저장·조회·수정·휴지통·복구를 트랜잭션 안에서 확인하고 롤백했다. 데스크톱·375px 모바일 화면은 운영 DB와 분리한 임시 가상 기록으로 확인했으며 임시 화면은 소스에서 제거했다. 새로운 대화형 로그인 및 실제 수면의 장시간 시작→재접속→종료는 별도 사용 검증이 필요하다.
